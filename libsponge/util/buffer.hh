@@ -31,7 +31,7 @@ class Buffer {
         }
         return {_storage->data() + _starting_offset, _storage->size() - _starting_offset};
     }
-
+    // \brief 隐式转换为std::string_view类型使用
     operator std::string_view() const { return str(); }
     //!@}
 
@@ -82,6 +82,7 @@ class BufferList {
 
     //! \brief Transform to a Buffer
     //! \note Throws an exception unless BufferList is contiguous
+    //! 
     operator Buffer() const;
 
     //! \brief Discard the first `n` bytes of the string (does not require a copy or move)

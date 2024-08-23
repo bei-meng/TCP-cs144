@@ -21,6 +21,7 @@ class FileDescriptor {
         unsigned _write_count = 0;  //!< The numberof times FDWrapper::_fd has been written
 
         //! Construct from a file descriptor number returned by the kernel
+        //! 必须显式的构造
         explicit FDWrapper(const int fd);
         //! Closes the file descriptor upon destruction
         ~FDWrapper();
@@ -42,6 +43,7 @@ class FileDescriptor {
     std::shared_ptr<FDWrapper> _internal_fd;
 
     // private constructor used to duplicate the FileDescriptor (increase the reference count)
+    //! 私有显式构造函数，用于复制文件描述器
     explicit FileDescriptor(std::shared_ptr<FDWrapper> other_shared_ptr);
 
   protected:
@@ -50,6 +52,7 @@ class FileDescriptor {
 
   public:
     //! Construct from a file descriptor number returned by the kernel
+    //! 显式构造函数
     explicit FileDescriptor(const int fd);
 
     //! Free the std::shared_ptr; the FDWrapper destructor calls close() when the refcount goes to zero.
