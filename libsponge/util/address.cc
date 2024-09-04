@@ -49,6 +49,7 @@ Address::Address(const string &node, const string &service, const addrinfo &hint
     addrinfo *resolved_address = nullptr;
 
     // look up the name or names
+    // 解析ip地址
     const int gai_ret = getaddrinfo(node.c_str(), service.c_str(), &hints, &resolved_address);
     if (gai_ret != 0) {
         throw tagged_error(gai_error_category(), "getaddrinfo(" + node + ", " + service + ")", gai_ret);
@@ -82,6 +83,7 @@ static inline addrinfo make_hints(const int ai_flags, const int ai_family) {
 
 //! \param[in] hostname to resolve
 //! \param[in] service name (from `/etc/services`, e.g., "http" is port 80)
+//! 返回所有地址，AF_INET表示Internet地址族，通常用于IPv4地址
 Address::Address(const string &hostname, const string &service)
     : Address(hostname, service, make_hints(AI_ALL, AF_INET)) {}
 
