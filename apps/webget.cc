@@ -1,6 +1,5 @@
 #include "socket.hh"
 #include "util.hh"
-#include "address.hh"
 
 #include <cstdlib>
 #include <iostream>
@@ -18,24 +17,8 @@ void get_URL(const string &host, const string &path) {
     // (not just one call to read() -- everything) until you reach
     // the "eof" (end of file).
 
-    // 创建一个TCPsocket
-    TCPSocket socket;
-    // 对面的地址，能将域名解析为ip地址，以及对应端口
-    Address add=Address(host,"http");
-    // 创建TCP连接
-    socket.connect(add);
-    // 最后空的\r\n告诉服务器你已经完成了请求
-    string data_send = "GET " + path + " HTTP/1.1\r\nHost: " + host + "\r\n" + "Connection: close\r\n\r\n";
-    socket.write(data_send);
-    // GET /hello HTTP/1.1
-    while (!socket.eof()) {
-       auto data_recv = socket.read();
-       std::cout << data_recv;
-    }
-    socket.close();
-
-    // cerr << "Function called: get_URL(" << host << ", " << path << ").\n";
-    // cerr << "Warning: get_URL() has not been implemented yet.\n";
+    cerr << "Function called: get_URL(" << host << ", " << path << ").\n";
+    cerr << "Warning: get_URL() has not been implemented yet.\n";
 }
 
 int main(int argc, char *argv[]) {
