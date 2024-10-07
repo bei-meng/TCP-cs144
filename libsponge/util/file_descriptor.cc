@@ -39,9 +39,12 @@ FileDescriptor::FDWrapper::~FDWrapper() {
 FileDescriptor::FileDescriptor(const int fd) : _internal_fd(make_shared<FDWrapper>(fd)) {}
 
 //! Private constructor used by duplicate()
+//! duplicate 调用FileDescriptor(_internal_fd);时，通过值传递得到了other_shared_ptr，共享指针的计数+1
+//! 然后通过move语义将资源转移到_internal_fd
 FileDescriptor::FileDescriptor(shared_ptr<FDWrapper> other_shared_ptr) : _internal_fd(move(other_shared_ptr)) {}
 
 //! \returns a copy of this FileDescriptor
+//! 调用私有显式构造函数
 FileDescriptor FileDescriptor::duplicate() const { return FileDescriptor(_internal_fd); }
 
 //! \param[in] limit is the maximum number of bytes to read; fewer bytes may be returned

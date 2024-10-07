@@ -12,6 +12,8 @@
 using namespace std;
 
 //! Converts Raw to `sockaddr *`.
+//! reinterpret_cast 用于将 storage 的地址转换为 sockaddr* 类型的指针。
+//! 使用 reinterpret_cast 需要谨慎，因为它不进行任何值的转换，只是重新解释内存中的位模式
 Address::Raw::operator sockaddr *() { return reinterpret_cast<sockaddr *>(&storage); }
 
 //! Converts Raw to `const sockaddr *`.
@@ -47,6 +49,7 @@ Address::Address(const string &node, const string &service, const addrinfo &hint
     addrinfo *resolved_address = nullptr;
 
     // look up the name or names
+    // 解析ip地址
     const int gai_ret = getaddrinfo(node.c_str(), service.c_str(), &hints, &resolved_address);
     if (gai_ret != 0) {
         throw tagged_error(gai_error_category(), "getaddrinfo(" + node + ", " + service + ")", gai_ret);
@@ -58,10 +61,13 @@ Address::Address(const string &node, const string &service, const addrinfo &hint
     }
 
     // put resolved_address in a wrapper so it will get freed if we have to throw an exception
+    // 匿名函数
     auto addrinfo_deleter = [](addrinfo *const x) { freeaddrinfo(x); };
+    // 独占所有权的智能指针
     unique_ptr<addrinfo, decltype(addrinfo_deleter)> wrapped_address(resolved_address, move(addrinfo_deleter));
 
     // assign to our private members (making sure size fits)
+    // *this 仍然指向原来的 Address 对象，但是通过调用构造函数，对象的状态被重新设置为新的状态
     *this = Address(wrapped_address->ai_addr, wrapped_address->ai_addrlen);
 }
 
@@ -77,6 +83,7 @@ static inline addrinfo make_hints(const int ai_flags, const int ai_family) {
 
 //! \param[in] hostname to resolve
 //! \param[in] service name (from `/etc/services`, e.g., "http" is port 80)
+//! 返回所有地址，AF_INET表示Internet地址族，通常用于IPv4地址
 Address::Address(const string &hostname, const string &service)
     : Address(hostname, service, make_hints(AI_ALL, AF_INET)) {}
 
