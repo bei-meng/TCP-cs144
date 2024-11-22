@@ -5,15 +5,37 @@
 
 #include <cstdint>
 #include <string>
+#include <map>
+
+
+// class SubString{
+//   private:
+//     size_t _index;
+//     std::string _s;
+//   public:
+//     // 构造函数
+//     SubString(size_t index,std::string && s):_index(index),_s(std::move(s)){};
+//     // 比较大小，a的索引大于b的时候，把b放在前面
+//     bool operator < (const SubString& b){
+//       return _index>b._index;
+//     }
+// };
 
 //! \brief A class that assembles a series of excerpts from a byte stream (possibly out of order,
 //! possibly overlapping) into an in-order byte stream.
 class StreamReassembler {
   private:
     // Your code here -- add private members as necessary.
-
+    size_t _nextIndex=0;
     ByteStream _output;  //!< The reassembled in-order byte stream
     size_t _capacity;    //!< The maximum number of bytes
+
+    size_t _unassembledSize=0;
+    size_t _endInputIndex=0;
+    size_t byte_stream=0;
+    bool _inputEOF=false;
+
+    std::map<size_t,std::string> _unassembled{};
 
   public:
     //! \brief Construct a `StreamReassembler` that will store up to `capacity` bytes.
