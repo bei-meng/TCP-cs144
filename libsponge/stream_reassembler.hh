@@ -30,9 +30,11 @@ class StreamReassembler {
     ByteStream _output;  //!< The reassembled in-order byte stream
     size_t _capacity;    //!< The maximum number of bytes
 
+    //未组装的字符的大小
     size_t _unassembledSize=0;
+    // 结束的index
     size_t _endInputIndex=0;
-    size_t byte_stream=0;
+    // size_t byte_stream=0;
     bool _inputEOF=false;
 
     std::map<size_t,std::string> _unassembled{};
@@ -68,6 +70,8 @@ class StreamReassembler {
     //! \brief Is the internal state empty (other than the output stream)?
     //! \returns `true` if no substrings are waiting to be assembled
     bool empty() const;
+
+    size_t nextIndex() const { return _nextIndex; }
 };
 
 #endif  // SPONGE_LIBSPONGE_STREAM_REASSEMBLER_HH

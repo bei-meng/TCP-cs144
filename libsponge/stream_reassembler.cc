@@ -24,7 +24,7 @@ void StreamReassembler::push_substring(const string &data, const size_t index, c
         _inputEOF=eof;
         _endInputIndex=index+data.length();
     }
-    cout<<"data   "<<index<<"  "<<data.length()+index<<endl;
+    // cout<<"data   "<<index<<"  "<<data.length()+index<<endl;
 
     size_t remainCapacity=_capacity-_output.buffer_size();//可用空间
     // 剩余空间包括整个容量的剩余空间+未组装的空间
@@ -114,7 +114,7 @@ void StreamReassembler::push_substring(const string &data, const size_t index, c
         it=_unassembled.begin();
         while(it!=_unassembled.end()){
             // if(_nextIndex==it->first)
-            cout<<">>>>>TTT    "<<_nextIndex<<"  "<<it->first<<"   "<<_nextIndex+it->second.length()<<endl;
+            // cout<<">>>>>TTT    "<<_nextIndex<<"  "<<it->first<<"   "<<_nextIndex+it->second.length()<<endl;
             
             if(it->first==_nextIndex){
                 writesize=it->second.length();

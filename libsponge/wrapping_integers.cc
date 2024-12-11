@@ -1,5 +1,4 @@
 #include "wrapping_integers.hh"
-
 // Dummy implementation of a 32-bit wrapping integer
 
 // For Lab 2, please replace with a real implementation that passes the
@@ -14,8 +13,8 @@ using namespace std;
 //! \param n The input absolute 64-bit sequence number
 //! \param isn The initial sequence number
 WrappingInt32 wrap(uint64_t n, WrappingInt32 isn) {
-    DUMMY_CODE(n, isn);
-    return WrappingInt32{0};
+    uint32_t res=n+isn.raw_value();
+    return WrappingInt32{res};
 }
 
 //! Transform a WrappingInt32 into an "absolute" 64-bit sequence number (zero-indexed)
@@ -29,6 +28,23 @@ WrappingInt32 wrap(uint64_t n, WrappingInt32 isn) {
 //! and the other stream runs from the remote TCPSender to the local TCPReceiver and
 //! has a different ISN.
 uint64_t unwrap(WrappingInt32 n, WrappingInt32 isn, uint64_t checkpoint) {
-    DUMMY_CODE(n, isn, checkpoint);
-    return {};
+    uint64_t res=n.raw_value();
+    // 如果当前序列号小于起始序列号，说明已经过了一个轮回了
+    if(n.raw_value() < isn.raw_value()){
+        res=res+0x0100000000;
+    }
+    // 差值
+    res=res-isn.raw_value();
+    // 然后找离checkpoint最近的值
+    if(res<checkpoint){
+        uint64_t a=checkpoint-res;
+        if(a>0x01'0000'0000){
+            res=res+(a/0x01'0000'0000)*0x01'0000'0000;
+        }
+        uint64_t tmp=res+0x01'0000'0000;
+        if(checkpoint-res>tmp-checkpoint){
+            res=tmp;
+        }
+    }
+    return res;
 }
