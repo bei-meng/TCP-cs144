@@ -25,6 +25,7 @@ void TCPReceiver::segment_received(const TCPSegment &seg) {
         uint64_t nextIndex=_reassembler.nextIndex();
         size_t index=unwrap(header.seqno,_isn,nextIndex);
         // printf("----%ld---%ld--\n",index,nextIndex);
+        // index为绝对序列号
         // 这里是绝对索引与流索引的映射问题，index=0时，说明是开始信号，index=1时才是数据
         if(index>=1){
             index-=1;
@@ -37,20 +38,18 @@ void TCPReceiver::segment_received(const TCPSegment &seg) {
         // 数据，开始的索引，流的索引，是否结束流
         _reassembler.push_substring(data.copy(),index,header.fin);
     }
-    if(hasSyn&&header.fin){
-        // 必须前面有开始的信号，结束信号才有效
-        hasFIn=header.fin;
-    }
 }
 
 optional<WrappingInt32> TCPReceiver::ackno() const {
     if(hasSyn){
         // 将一个绝对序列号转成WrappingInt32
         // 必须有开始信号，并且如果已经结束了，并且未组装的字节流为空
-        uint64_t n = _reassembler.nextIndex() + 1 + (hasFIn&&_reassembler.empty() ? 1 : 0);
+        // 第一个bit没有接收到的序列号，SYN和FIN都占一个序列号
+        uint64_t n = _reassembler.nextIndex() + 1 + (_reassembler.stream_out().input_ended() ? 1 : 0);
+        // n为绝对序列号，转成对应的序列号，希望接收到的下一个字节的序列号
         return wrap(n,_isn);
     }
     return {};
 }
 
-size_t TCPReceiver::window_size() const { return _capacity-_reassembler.stream_out().buffer_size(); }
+size_t TCPReceiver::window_size() const { return _reassembler.stream_out().remaining_capacity(); }

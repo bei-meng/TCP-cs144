@@ -50,9 +50,12 @@ void ByteStream::pop_output(const size_t len) {
 //! \returns a string
 std::string ByteStream::read(const size_t len) {
     size_t length=min(dataStream.size(),len);
-    std::string str=peek_output(length);
-    pop_output(length);
-    return str;
+    if(length>0){
+        std::string str=peek_output(length);
+        pop_output(length);
+        return str;
+    }
+    return {};
 }
 
 void ByteStream::end_input() {
@@ -65,7 +68,7 @@ size_t ByteStream::buffer_size() const { return dataStream.size(); }
 
 bool ByteStream::buffer_empty() const { return !buffer_size(); }
 
-bool ByteStream::eof() const { return input_ended()&&buffer_empty(); }
+bool ByteStream::eof() const { return _end_input && buffer_empty(); }
 
 size_t ByteStream::bytes_written() const { return writeByte; }
 

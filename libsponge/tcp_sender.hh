@@ -9,6 +9,54 @@
 #include <functional>
 #include <queue>
 
+
+
+class RTtimer {
+  private:
+    // 当前用时
+    uint16_t now_time = 0;
+    // 超时重传的界限
+    uint16_t rt_timeout{};
+    // 当前超时重传次数
+    unsigned int retx_attempts = 0;
+    // 是否启动计时
+    bool enable = false;
+
+  public:
+    RTtimer(const uint16_t retx_timeout):rt_timeout(retx_timeout){}
+    // 是否应该重传,时间相等的时候也要重传
+    bool should_rt(){ return enable && (now_time >= rt_timeout);}
+
+    void start(){ enable = true;}
+    void stop(){ enable = false;}
+
+    // 一切归零
+    void restart(const uint16_t retx_timeout){
+      now_time = 0;
+      rt_timeout = retx_timeout;
+      retx_attempts = 0;
+      enable = false;
+    }
+
+    // 重传,只有当窗口不为0时，rt_timeout才翻倍
+    void rt(uint16_t window_size){
+      now_time = 0;
+      if(window_size>0){
+        rt_timeout *= 2;
+      }
+      retx_attempts ++;
+    }
+
+    unsigned int get_retx_attempts() const {return retx_attempts;}
+
+    bool tick(size_t dt){
+      if(enable){
+        now_time +=dt;
+        return should_rt();
+      }
+      return false;
+    }
+};
 //! \brief The "sender" part of a TCP implementation.
 
 //! Accepts a ByteStream, divides it up into segments and sends the
@@ -23,6 +71,12 @@ class TCPSender {
     //! outbound queue of segments that the TCPSender wants sent
     std::queue<TCPSegment> _segments_out{};
 
+    //! 发送的TCP段，但是没有被确定的段
+    std::queue<TCPSegment> _segments_out_nuack{};
+
+    //! 发送但是没有被确认的字节
+    uint64_t _bytes_unack{0};
+
     //! retransmission timer for the connection
     unsigned int _initial_retransmission_timeout;
 
@@ -31,6 +85,17 @@ class TCPSender {
 
     //! the (absolute) sequence number for the next byte to be sent
     uint64_t _next_seqno{0};
+
+    //! 最后一次受到的确认号,转换为绝对序列号了
+    uint64_t _ack_abs_seqno{0};
+
+    //! 初始窗口大小为1
+    uint16_t _window_size{1};
+
+    RTtimer rt;
+
+    //! 是否发送了fin信号
+    bool fin{false};
 
   public:
     //! Initialize a TCPSender
