@@ -19,13 +19,19 @@ StreamReassembler::StreamReassembler(const size_t capacity) : _output(capacity),
 //! \details This function accepts a substring (aka a segment) of bytes,
 //! possibly out-of-order, from the logical stream, and assembles any newly
 //! contiguous substrings and writes them into the output stream in order.
-void StreamReassembler::push_substring(const string &data, const size_t index, const bool eof) {
+void StreamReassembler::push_substring(const string &data1, const size_t index, const bool eof) {
     if(eof){
         _inputEOF=eof;
-        _endInputIndex=index+data.length();
+        _endInputIndex=index+data1.length();
     }
     // cout<<"data   "<<index<<"  "<<data.length()+index<<endl;
-
+    // 这边可能出现数据超过win的大小，截断---之前的实验中没考虑到
+    string data = data1;
+    if(index>_nextIndex+_capacity){
+        return;
+    }else if(index+data.length()>_nextIndex+_capacity){
+        data = data.substr(0,_nextIndex+_capacity-index);
+    }
     size_t remainCapacity=_capacity-_output.buffer_size();//可用空间
     // 剩余空间包括整个容量的剩余空间+未组装的空间
     if((index+data.length())>_nextIndex&&remainCapacity>0){//有数据能存
