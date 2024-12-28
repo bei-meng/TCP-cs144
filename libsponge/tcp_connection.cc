@@ -36,7 +36,6 @@ void TCPConnection::reset_connection() {
 }
 
 void TCPConnection::segment_received(const TCPSegment &seg) {
-    cerr<<"收到信号了吗222\n";
     // 非启动时不接收
     if(!active_){
         return;
@@ -60,7 +59,6 @@ void TCPConnection::segment_received(const TCPSegment &seg) {
             send_data();
         }
     }else if(state() == TCPState::State::LISTEN){
-        cerr<<"收到信号了吗\n";
         // cout<<"LISTEN or CLOSED"<<endl;
         // 等待接收SYN信号
         if(header.syn){
@@ -199,17 +197,18 @@ void TCPConnection::connect() {
 }
 
 void TCPConnection::send_data(){
-    cerr<<"发送信号了没\n";
     // sender管SYN，FIN信号，还有seqno,receiver管win和ack标记，ackno
     while(!_sender.segments_out().empty()){
        TCPSegment seg = _sender.segments_out().front();
        _sender.segments_out().pop();
+       seg.header().win = _receiver.window_size();
        // 尽量设置ackno和window_size
+       cout<<seg.header().syn<<"   "<<seg.header().ack<<"  "<<seg.header().win<<endl;
        if (_receiver.ackno().has_value()) {
            seg.header().ack = true;
            seg.header().ackno = _receiver.ackno().value();
-           seg.header().win = _receiver.window_size();
        }
+
        _segments_out.push(seg);
 
     }
