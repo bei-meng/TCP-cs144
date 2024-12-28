@@ -24,12 +24,14 @@ void StreamReassembler::push_substring(const string &data1, const size_t index, 
         _inputEOF=eof;
         _endInputIndex=index+data1.length();
     }
-    // cout<<"data   "<<index<<"  "<<data.length()+index<<endl;
+    // cout<<"data   "<<index<<"  "<<data1.length()+index<<endl;
+    // cout<<(index>(_nextIndex+_capacity))<<"   "<<_capacity<<endl;
     // 这边可能出现数据超过win的大小，截断---之前的实验中没考虑到
     string data = data1;
-    if(index>_nextIndex+_capacity){
+    if(index>=(_nextIndex+_capacity)){
         return;
-    }else if(index+data.length()>_nextIndex+_capacity){
+    }
+    else if((index+data.length())>(_nextIndex+_capacity)){
         data = data.substr(0,_nextIndex+_capacity-index);
     }
     size_t remainCapacity=_capacity-_output.buffer_size();//可用空间
