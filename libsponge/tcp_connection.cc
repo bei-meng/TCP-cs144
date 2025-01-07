@@ -95,6 +95,9 @@ void TCPConnection::segment_received(const TCPSegment &seg) {
             // 收到确认就不用回！！！！
             _receiver.segment_received(seg);
             if(header.ack)_sender.ack_received(header.ackno,header.win);
+            if(seg.length_in_sequence_space()>0){
+                _sender.send_empty_segment();
+            }
             send_data();
         }
     }else if(state() == TCPState::State::FIN_WAIT_2){
