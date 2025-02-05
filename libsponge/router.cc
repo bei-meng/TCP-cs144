@@ -28,15 +28,57 @@ void Router::add_route(const uint32_t route_prefix,
                        const size_t interface_num) {
     cerr << "DEBUG: adding route " << Address::from_ipv4_numeric(route_prefix).ip() << "/" << int(prefix_length)
          << " => " << (next_hop.has_value() ? next_hop->ip() : "(direct)") << " on interface " << interface_num << "\n";
-
-    DUMMY_CODE(route_prefix, prefix_length, next_hop, interface_num);
-    // Your code here.
+    // 按顺序插入, 前缀长的放前面
+    bool insert_success = false;
+    for(auto it=_router_table.begin();it!=_router_table.end();it++){
+        if(prefix_length>it->prefix_length){
+            _router_table.insert(it,router_record{
+                route_prefix,
+                prefix_length,
+                next_hop,
+                interface_num
+            });
+            insert_success = true;
+            break;
+        }
+    }
+    // 没有插入, 放最后面
+    if(!insert_success){
+        _router_table.push_back(router_record{
+            route_prefix,
+            prefix_length,
+            next_hop,
+            interface_num
+        });
+    }
 }
 
 //! \param[in] dgram The datagram to be routed
 void Router::route_one_datagram(InternetDatagram &dgram) {
-    DUMMY_CODE(dgram);
-    // Your code here.
+    // ttl已经到0了, 或者减一次后到零了
+    if(dgram.header().ttl == 0 || (--dgram.header().ttl)==0){
+        return;
+    }
+    for(auto it=_router_table.begin();it!=_router_table.end();it++){
+        // 匹配所有的
+        if(it->prefix_length==0){
+            interface(it->interface_num).send_datagram(dgram,it->next_hop.value());
+            break;
+        }else{
+            //根据前缀长度左移
+            uint32_t prefix_mask = uint32_t(~0)<<(32-it->prefix_length);
+            if((dgram.header().dst&prefix_mask) == (it->route_prefix&prefix_mask)){
+                if(it->next_hop.has_value()){
+                    // 发给其他网络接口的,下一跳
+                    interface(it->interface_num).send_datagram(dgram,it->next_hop.value());
+                }else{
+                    // 就在这里,不用继续转发了
+                    interface(it->interface_num).send_datagram(dgram,Address::from_ipv4_numeric(dgram.header().dst));
+                }
+                break;
+            }
+        }
+    }
 }
 
 void Router::route() {
