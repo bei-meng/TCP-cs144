@@ -21,7 +21,8 @@ void get_URL(const string &host, const string &path) {
 
     // 创建一个TCPsocket
     // TCPSocket socket;
-    CS144TCPSocket socket;
+    // CS144TCPSocket socket;
+    FullStackSocket socket;
     // 对面的地址，能将域名解析为ip地址，以及对应端口
     Address add=Address(host,"http");
     // 创建TCP连接
@@ -35,6 +36,7 @@ void get_URL(const string &host, const string &path) {
        std::cout << data_recv;
     }
     // socket.close();
+    // 下面是使用自己的TCP协议
     socket.wait_until_closed();
 
     // cerr << "Function called: get_URL(" << host << ", " << path << ").\n";

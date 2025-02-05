@@ -4,7 +4,7 @@ show_usage () {
     echo "Usage: $0 <start | stop | restart | check> [tapnum ...]"
     exit 1
 }
-
+# TUN_IP_PREFIX=169.254
 start_tap () {
     local TAPNUM="$1" TAPDEV="tap$1" LLADDR="02:B0:1D:FA:CE:"`printf "%02x" $1`
     ip tuntap add mode tap user "${SUDO_USER}" name "${TAPDEV}"
@@ -100,6 +100,7 @@ if [ "$MODE" = "check" ]; then
     if [ "$#" = "0" ]; then
         exit 0
     fi
+    # 表示要打开哪几个设备
     echo -e "[$0] Bringing up tunnels ${INTFS[@]}:"
 fi
 

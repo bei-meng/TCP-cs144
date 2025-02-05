@@ -7,6 +7,8 @@
 
 #include <optional>
 #include <queue>
+#include <map>
+#include <vector>
 
 //! \brief A "network interface" that connects IP (the internet layer, or network layer)
 //! with Ethernet (the network access layer, or link layer).
@@ -30,6 +32,12 @@
 //! request or reply, the network interface processes the frame
 //! and learns or replies as necessary.
 class NetworkInterface {
+  struct ip_map_ethernet{
+    EthernetAddress addr;
+    size_t time;
+  };
+  static constexpr size_t ARP_RESEND_TIME = 5000;
+  static constexpr size_t ARP_REMAIN_TIME = 30000;
   private:
     //! Ethernet (known as hardware, network-access-layer, or link-layer) address of the interface
     EthernetAddress _ethernet_address;
@@ -40,6 +48,15 @@ class NetworkInterface {
     //! outbound queue of Ethernet frames that the NetworkInterface wants sent
     std::queue<EthernetFrame> _frames_out{};
 
+    //! 没有hop_ip的MAC地址, 就先存起来
+    std::map<uint32_t,std::vector<EthernetFrame>> _frames_out_unsend{};
+    //! next_hop_ip to Ethernet address map
+    std::map<uint32_t,ip_map_ethernet> cache{};
+    std::map<uint32_t,size_t> arp_send{};
+
+    //! 用于计时
+    size_t time_now = 0;
+
   public:
     //! \brief Construct a network interface with given Ethernet (network-access-layer) and IP (internet-layer) addresses
     NetworkInterface(const EthernetAddress &ethernet_address, const Address &ip_address);
@@ -47,6 +64,9 @@ class NetworkInterface {
     //! \brief Access queue of Ethernet frames awaiting transmission
     std::queue<EthernetFrame> &frames_out() { return _frames_out; }
 
+
+    void send_arp(const uint32_t next_hop_ip);
+    void reply_arp(const uint32_t next_hop_ip,const EthernetAddress &target_ethernet_address);
     //! \brief Sends an IPv4 datagram, encapsulated in an Ethernet frame (if it knows the Ethernet destination address).
 
     //! Will need to use [ARP](\ref rfc::rfc826) to look up the Ethernet destination address for the next hop
