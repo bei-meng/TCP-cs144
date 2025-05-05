@@ -1,4 +1,5 @@
-#include "socket.hh"
+// #include "socket.hh"
+#include "tcp_sponge_socket.hh"
 #include "util.hh"
 #include "address.hh"
 
@@ -19,7 +20,9 @@ void get_URL(const string &host, const string &path) {
     // the "eof" (end of file).
 
     // 创建一个TCPsocket
-    TCPSocket socket;
+    // TCPSocket socket;
+    // CS144TCPSocket socket;
+    FullStackSocket socket;
     // 对面的地址，能将域名解析为ip地址，以及对应端口
     Address add=Address(host,"http");
     // 创建TCP连接
@@ -32,7 +35,9 @@ void get_URL(const string &host, const string &path) {
        auto data_recv = socket.read();
        std::cout << data_recv;
     }
-    socket.close();
+    // socket.close();
+    // 下面是使用自己的TCP协议
+    socket.wait_until_closed();
 
     // cerr << "Function called: get_URL(" << host << ", " << path << ").\n";
     // cerr << "Warning: get_URL() has not been implemented yet.\n";
